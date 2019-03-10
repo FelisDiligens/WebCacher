@@ -1,0 +1,35 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    background-color: #fdfdfd;
+}
+
+img {
+    width: 256px;
+    height: 256px;
+    margin-top: 50px;
+}
+
+h1, h2 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: normal;
+}
+
+h1 {
+    font-size: 40px;
+}
+
+h2 {
+    font-size: 24px;
+}
+
+p {
+    display: block;
+    font-family: monospace;
+    text-align: left;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 0 30px;
+    word-break: break-word;
+}
