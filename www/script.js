@@ -7,7 +7,7 @@ function getURL() {
         return null;
     } else if (regex.test(url)) {
         if (url.indexOf("://") >= 0)
-            url = url.substring(url.indexOf("://"));
+            url = url.substring(url.indexOf("://") + 3);
         return "/cache/" + url;
     } else {
         return "/cache/www.google.com/search?q=" + encodeURIComponent(url);
