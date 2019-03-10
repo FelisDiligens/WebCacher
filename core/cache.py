@@ -1,6 +1,6 @@
 from core.url import URL
 from core.locals import *
-import urllib, pathlib, mimetypes, json, time, lxml.html, requests, os
+import urllib, pathlib, mimetypes, json, time, lxml.html, requests, os, io
 from flask import send_file
 from datetime import datetime
 from pytube import YouTube
@@ -69,7 +69,7 @@ class WebFile:
 
         wf.path = pathlib.Path(wf.url.resolve_to_path()) / wf.file
 
-        wf.size = len(self.content)
+        wf.size = len(wf.content)
 
         return wf
 
