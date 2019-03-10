@@ -26,6 +26,25 @@ It's really simple.
 Just clone it and run "main.py".
 That's it.
 
+### Scripts
+#### Windows
+Install Python first and then run in a Command Prompt:
+```batch
+pip install requests Flask lxml
+git clone https://github.com/FelisDiligens/WebCacher.git
+cd WebCacher
+python main.py
+```
+
+#### Ubuntu
+```bash
+sudo apt install python3 git -y
+pip install requests Flask lxml
+git clone https://github.com/FelisDiligens/WebCacher.git
+cd WebCacher
+python3 main.py
+```
+
 ## Remarks
 The code is really not clean and optimized. I'm a newbie.
 
