@@ -1,5 +1,6 @@
 import re
 import urllib.parse
+from core.locals import *
 
 """
     TODO:
@@ -20,7 +21,7 @@ class URL:
         self.host = ""
         self.port = ""
         self.path = []
-        self.arguments = {}
+        self.query = {}
         self.fragment = ""
         self.endswith_separator = False
 
@@ -129,7 +130,7 @@ class URL:
         u.host = self.host
         u.port = self.port
         u.path = self.path.copy()
-        u.arguments = self.arguments.copy()
+        u.query = self.query.copy()
         u.fragment = self.fragment
         u.endswith_separator = self.endswith_separator
         return u
@@ -144,7 +145,7 @@ URL_REGEX = re.compile(r"(^|[\s.:;?\-\]<\(])(https?://[-\w;/?:@&=+$\|\_.!~*\|'()
 def _is_valid_url(s):
     return bool(URL_REGEX.match(str(s)))
 
-def _parse_url_arguments(s):
+def _parse_url_query(s):
     args = {}
     for arg in s.strip().lstrip("?").split("&"):
         key, value = arg.split("=")
@@ -165,10 +166,10 @@ def _parse_url(url, s):
         url.scheme = temp[:i]
         temp = temp[i+3:]
 
-    # Get the arguments (e.g. "?q=foo+bar")
+    # Get the query (e.g. "?q=foo+bar")
     i = temp.find("?")
     if i >= 0:
-        url.arguments = _parse_url_arguments(temp[i+1:])
+        url.query = _parse_url_query(temp[i+1:])
         temp = temp[:i]
 
     # Get the fragment (e.g. "#anRandomFragment")
@@ -225,9 +226,9 @@ def _resolve_to_url(url):
     if url.fragment:
         resolved_url += "#" + url.fragment
 
-    # Add arguments, if available (e.g. "?q=foo+bar")
-    if url.arguments:
-        resolved_url += "?" + urllib.parse.urlencode(url.arguments)
+    # Add query, if available (e.g. "?q=foo+bar")
+    if url.query:
+        resolved_url += "?" + urllib.parse.urlencode(url.query)
 
     return resolved_url
 
@@ -242,11 +243,11 @@ def _resolve_to_path(url):
     """
 
     # TODO: ADD PORT AND THE OTHER STUFF!!
-    result = _remove_unsafe_characters("./cache/" + "/".join(reversed(url.host.split("."))) + "/" + "/".join(url.path))
+    result = remove_unsafe_characters("./cache/" + "/".join(reversed(url.host.split("."))) + "/" + "/".join(url.path))
 
-    # Has arguments? Then calculate and append an hash to path.
-    if url.arguments:
-        query_hash = _java_string_hashcode(urllib.parse.urlencode(url.arguments))
+    # Has query? Then calculate and append an hash to path.
+    if url.query:
+        query_hash = _java_string_hashcode(urllib.parse.urlencode(url.query))
         result += "/query%.0f" % (query_hash)
 
     return result
@@ -257,11 +258,3 @@ def _java_string_hashcode(s):
     for c in s:
         h = (31 * h + ord(c)) & 0xFFFFFFFF
     return ((h + 0x80000000) & 0xFFFFFFFF) - 0x80000000
-
-def _remove_unsafe_characters(path):
-    result = []
-    for chunk in path.split("/"):
-        result.append(
-            re.sub(r'[^a-zA-Z0-9_\-\.]', "", chunk)
-        )
-    return "/".join(result)

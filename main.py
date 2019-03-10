@@ -6,7 +6,7 @@ from core.url import URL
 from core.cache import WebFile, WebCacher, WebCrawler
 from core.postprocess import *
 
-import io
+import io, pathlib
 
 import logging
 log = logging.getLogger('werkzeug')
@@ -24,22 +24,13 @@ def index():
 def www(file):
     return send_file("www/" + file)
     
-"""
+
 @app.route("/cache")
 def cache():
-    try:
-        url = request.values.get('url')
-        print("Accessing: \"%s\"" % (url))
-        wf = WebCacher.get(url)
-        if wf.type == "text/html":
-            manipulate_urls(wf)
-        return send_file(
-            io.BytesIO(wf.content),
-            mimetype=wf.type)
-    except:
-        print("[FAIL] Couldn't load \"%s\"" % url)
-        return get_traceback_as_html()
-"""
+    url = URL.from_url(request.values.get('url'))
+    url.scheme = None
+    return redirect("http://" + get_ip() + "/cache/" + url.resolve(), code=302)
+
 
 @app.route("/cache/<path:url>")
 def cache_url(url):
@@ -50,15 +41,11 @@ def cache_url(url):
         if query:
             query = "?" + query
         url = "https://" + url + query
-        # request.query_string
-        # request.url
         print("Accessing: \"%s\"" % (url))
         wf = WebCacher.get(url)
         if wf.type == "text/html":
             manipulate_urls(wf)
-        return send_file(
-            io.BytesIO(wf.content),
-            mimetype=wf.type)
+        return wf.send_file()
     except ConnectionError:
         if check_connection():
             return send_file("www/error/unavailable.html")
@@ -89,4 +76,4 @@ def crawl():
     return "Well... look into the console window."
 """
 
-app.run(host='0.0.0.0', port=8080)
+app.run(host='0.0.0.0', port=8000)

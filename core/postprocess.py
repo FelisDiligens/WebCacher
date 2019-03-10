@@ -1,5 +1,6 @@
 import socket, urllib, lxml.html
 from core.url import URL
+from core.locals import *
 
 def manipulate_urls(wf):
     try:
@@ -19,20 +20,6 @@ def manipulate_urls(wf):
         print("[WARN] Couldn't manipulate URLs. Page \"%s\" may be broken." % (url))
     return wf
 
-def _get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # doesn't even have to be reachable
-        s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
-
-_local_ip_address = _get_ip()
-
 def _to_cache_url(origin, link):
     try:
         #return "http://%s:8080/cache?url=%s" % (_local_ip_address, urllib.parse.quote((URL.from_url(origin) / link).resolve()))
@@ -42,3 +29,5 @@ def _to_cache_url(origin, link):
     except ValueError as e:
         print("[WARN] Concatening of \"%s\" failed: %s" % (link, e))
         return link
+    
+_local_ip_address = get_ip()
