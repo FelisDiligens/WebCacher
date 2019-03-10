@@ -28,7 +28,7 @@ That's it.
 
 ### Scripts
 #### Windows
-Install Python first and then run in a Command Prompt:
+Install Python 3 and git first and then run in a Command Prompt:
 ```batch
 pip install requests Flask lxml
 git clone https://github.com/FelisDiligens/WebCacher.git
