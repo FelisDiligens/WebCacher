@@ -48,7 +48,7 @@ def proxify_html(wf):
         content = wf.get_decoded_content()
         tree = lxml.html.fromstring(content) # Parse whole html tree
 
-        for el in [["a", "href"], ["link", "href"], ["script", "src"], ["img", "src"], ["form", "action"]]: # Crawl elements with URL
+        for el in [["a", "href"], ["link", "href"], ["script", "src"], ["img", "src"], ["form", "action"], ["iframe", "src"]]: # Crawl elements with URL
             for link_element in tree.xpath('//' + el[0]):
                 url = link_element.get(el[1]) # Get original URL
                 if url:
