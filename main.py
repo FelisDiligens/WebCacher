@@ -43,8 +43,7 @@ def cache_url(url):
         url = "https://" + url + query
         print("Accessing: \"%s\"" % (url))
         wf = WebCacher.get(url)
-        if wf.type == "text/html":
-            manipulate_urls(wf)
+        proxify(wf)
         return wf.send_file()
     except ConnectionError:
         if check_connection():
