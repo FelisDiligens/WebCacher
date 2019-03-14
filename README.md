@@ -58,3 +58,6 @@ I'm frequently using public wifi and it's painfully slow.
 So I wanted to save resources offline to save traffic and access them offline.
 It works out pretty well, especially if the site reuses the same files across pages.
 Google search request can be accessed offline, too.
+
+### Inspired by...
+* joshdick's [miniProxy](https://github.com/joshdick/miniProxy)
