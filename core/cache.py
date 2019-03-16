@@ -17,11 +17,9 @@ class WebFile:
         self.status_code = -1
         self.size = 0
 
-    def from_cache(url):
+    def from_path(path):
         wf = WebFile()
-        wf.url = URL.from_url(url)
-
-        cache_path = pathlib.Path(wf.url.resolve_to_path())
+        cache_path = pathlib.Path(path)
         response_path = cache_path / "response.json"
         if not response_path.exists():
             return None
@@ -29,6 +27,7 @@ class WebFile:
         response = json.load(open(response_path, "r"))
         wf.accessed = response["accessed"]
         wf.file = response["file"]
+        wf.url = URL.from_url(response["url"])
         wf.path = cache_path / wf.file
         wf.type = response["type"]
         wf.encoding = response["encoding"]
@@ -38,6 +37,12 @@ class WebFile:
         with open(wf.path, "rb") as f:
             wf.content = f.read()
 
+        return wf
+
+    def from_cache(url):
+        wf = WebFile.from_path(URL.from_url(url).resolve_to_path())
+        if wf != None:
+            wf.url = URL.from_url(url)
         return wf
 
     def from_web(url):
@@ -210,11 +215,22 @@ class YouTubeVideo:
 class WebCacher:
     def get(url):
         wf = None
+        url = URL.from_url(url)
         if WebCacher.is_cached(url):
             wf = WebFile.from_cache(url) if not _is_youtube(url) else YouTubeVideo.from_cache(url)
         else:
-            wf = WebFile.from_web(url) if not _is_youtube(url) else YouTubeVideo.from_web(url)
-            wf.save()
+            try:
+                wf = WebFile.from_web(url) if not _is_youtube(url) else YouTubeVideo.from_web(url)
+                wf.save()
+            except:
+                if url.query:
+                    path = pathlib.Path(url.resolve_to_path()).parent
+                    queries = os.listdir(str(path))
+                    if len(queries) > 0:
+                        wf = WebFile.from_path(path / queries[0])
+                        print("[WARN] Serving    \"%s\"\n       instead of \"%s\"\n       because it's similar." % (url, wf.url))
+                else:
+                    raise
         return wf
 
     def download(url):

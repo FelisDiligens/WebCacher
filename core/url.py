@@ -40,6 +40,7 @@ class URL:
         Will raise an ValueError, if URL is invalid.
         """
         _parse_url(self, u)
+        return self
 
     def __str__(self):
         return self.resolve()
@@ -58,16 +59,6 @@ class URL:
         """
         return _resolve_to_path(self)
 
-    def _concat(self, s):
-        """In development..."""
-        # If the url is absolute...
-        if _is_valid_url(s):
-            return URL.from_url(s) # parse it instead.
-
-        # /starts/with/slash
-        if s.lstrip().startswith("/"):
-            pass
-
     def concat(self, s):
         """
         Concatenate an path to the url.
@@ -83,8 +74,36 @@ class URL:
             self.parse(urllib.parse.urljoin(self.resolve(), s))
         return self
 
+    def _concat(self, other):
+        """
+        In development
+        """
+        # If the url is absolute...
+        if _is_valid_url(other):
+            return self.parse(other) # parse it instead.
+
+        self.fragment = ""
+        self.query = {}
+
+        other = other.strip()
+        if other.startswith("#"):
+            self.fragment = other[1:]
+        elif other.startswith("/"):
+            self.path = other[1:].split("/")
+            self.endswith_separator = other[-1] == "/"
+        elif other.startswith("?"):
+            result.query = _parse_url_query(other)
+        else:
+            if not self.endswith_separator:
+                self.path = self.path[:-1]
+            self.path = self.path + other.split("/")
+
+        return self
+
+
     def __add__(self, other):
-        return URL.from_url(urllib.parse.urljoin(self.resolve(), other))
+        #return URL.from_url(urllib.parse.urljoin(self.resolve(), other))
+        return self.copy().concat(other)
 
     __truediv__ = __add__
 
@@ -126,7 +145,7 @@ class URL:
         u = URL()
         u.original_url = self.original_url
         u.scheme = self.scheme
-        u.userinfo = self.userinfo
+        #u.userinfo = self.userinfo
         u.host = self.host
         u.port = self.port
         u.path = self.path.copy()
@@ -148,9 +167,24 @@ def _is_valid_url(s):
 def _parse_url_query(s):
     args = {}
     for arg in s.strip().lstrip("?").split("&"):
-        key, value = arg.split("=")
-        args[key] = urllib.parse.unquote_plus(value)
+        if "=" in arg:
+            key, value = arg.split("=")
+            args[key] = urllib.parse.unquote_plus(value)
+        else:
+            args[arg] = None
     return args
+
+def _resolve_url_query(query):
+    if not query:
+        return ""
+    result = "?"
+    for key in query:
+        value = query[key]
+        if value == None:
+            result += urllib.parse.urlencode({key: ""}).rstrip("=") + "&"
+        else:
+            result += urllib.parse.urlencode({key: value}) + "&"
+    return result.rstrip("&")
 
 def _parse_url(url, s):
     # Don't parse invalid URLs:
@@ -228,7 +262,7 @@ def _resolve_to_url(url):
 
     # Add query, if available (e.g. "?q=foo+bar")
     if url.query:
-        resolved_url += "?" + urllib.parse.urlencode(url.query)
+        resolved_url += _resolve_url_query(url.query)
 
     return resolved_url
 

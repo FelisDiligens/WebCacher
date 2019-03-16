@@ -6,7 +6,7 @@ from core.url import URL
 from core.cache import WebFile, WebCacher, WebCrawler
 from core.postprocess import *
 
-import io, pathlib
+import io, pathlib, traceback
 
 import logging
 log = logging.getLogger('werkzeug')
@@ -41,17 +41,19 @@ def cache_url(url):
         if query:
             query = "?" + query
         url = "https://" + url + query
-        print("Accessing: \"%s\"" % (url))
+        print("Requesting: \"%s\"" % (url))
         wf = WebCacher.get(url)
         proxify(wf)
         return wf.send_file()
     except ConnectionError:
+        print("[FAIL] Couldn't load \"%s\", due to bad connection." % url)
         if check_connection():
             return send_file("www/error/unavailable.html")
         else:
             return send_file("www/error/offline.html")
     except:
-        print("[FAIL] Couldn't load \"%s\"" % url)
+        print("[FAIL] Couldn't load \"%s\", due to internal error." % url)
+        #traceback.print_exc()
         return get_file("www/error/guru.html").replace("%%TRACEBACK%%", get_traceback_as_html())
         #return get_traceback_as_html()
 

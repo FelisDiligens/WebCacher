@@ -83,7 +83,7 @@ def _to_cache_url(origin, link):
         url.scheme = None # Scheme ("https://") will not be in string
         return "http://%s:8080/cache/%s" % (_local_ip_address, url.resolve())
     except ValueError as e:
-        print("[WARN] Concatening of \"%s\" failed: %s" % (link, e))
+        #print("[WARN] Concatening of \"%s\" failed: %s" % (link, e))
         return link
     
 _local_ip_address = get_ip()
