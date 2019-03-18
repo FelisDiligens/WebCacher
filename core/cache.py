@@ -223,8 +223,8 @@ class WebCacher:
                 wf = WebFile.from_web(url) if not _is_youtube(url) else YouTubeVideo.from_web(url)
                 wf.save()
             except:
-                if url.query:
-                    path = pathlib.Path(url.resolve_to_path()).parent
+                path = pathlib.Path(url.resolve_to_path()).parent
+                if url.query and os.path.isdir(str(path)):
                     queries = os.listdir(str(path))
                     if len(queries) > 0:
                         wf = WebFile.from_path(path / queries[0])
