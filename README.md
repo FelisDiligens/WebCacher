@@ -41,18 +41,18 @@ python main.py
 
 #### Ubuntu
 ```bash
-sudo apt install python3 git -y
-pip install requests Flask lxml
+sudo apt install python3 python3-pip git -y
+pip3 install requests Flask lxml
 git clone https://github.com/FelisDiligens/WebCacher.git
 cd WebCacher
 python3 main.py
 ```
 
 ## Remarks
-The code is really not clean and optimized. I'm a newbie.
+The code is not as clean and optimized.
 
 Some pages aren't rendered properly, but most do.
-Also, there is no support for form requests (yet).
+Also, only GET forms are supported yet.
 
 It's a bare-bones cacher and hopefully it serves your purpose. :)
 
