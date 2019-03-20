@@ -1,5 +1,5 @@
 # WebCacher
-A http server that caches every requested resource from the internet for offline use.
+A http server (proxy) that caches every requested resource from the internet for offline use.
 
 ![Screenshot](https://github.com/FelisDiligens/WebCacher/raw/master/screenshots/index.jpg)
 > Screenshot showing the startpage.
@@ -13,7 +13,10 @@ A http server that caches every requested resource from the internet for offline
 When you access a site through the cacher, it downloads the resource from the internet and saves it locally.
 Then it will serve it from disk. (Queries are hashed, so search requests will be saved, too)
 
-It will always prefer the cached resource, so you'll be able to access whole sites offline and save a lot of traffic.
+All links and references will be altered to divert to the proxy.
+The headers of the browser's request will be forwarded, so you will likely not be confronted with "No robots" warnings.
+
+It will always prefer the cached resource, so you'll be able to access whole sites offline and save some traffic.
 
 ## Deploy
 ### Prerequirements
@@ -59,5 +62,5 @@ So I wanted to save resources offline to save traffic and access them offline.
 It works out pretty well, especially if the site reuses the same files across pages.
 Google search request can be accessed offline, too.
 
-### Inspired by...
+## Inspired by...
 * joshdick's [miniProxy](https://github.com/joshdick/miniProxy)
