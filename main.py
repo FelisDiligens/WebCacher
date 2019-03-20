@@ -61,6 +61,10 @@ def cache_url(url):
 def error404(e):
     return send_file("www/error/404.html")
 
+@app.route("/test")
+def headerstest():
+    return json.dumps(get_headers_to_forward(), indent=4).replace(" ", "&nbsp;").replace("\n", "<br>")
+
 """
 @app.route("/crawl")
 def crawl():

@@ -51,7 +51,7 @@ class WebFile:
         wf.accessed = time.time()
 
         # Requesting file from web server:
-        response = requests.get(wf.url.resolve(), timeout=60)
+        response = requests.get(wf.url.resolve(), timeout=60, headers=get_headers_to_forward())
         wf.encoding = response.apparent_encoding # response.encoding
         wf.content = response.content
         wf.type = response.headers.get('content-type')

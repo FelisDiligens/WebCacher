@@ -1,3 +1,4 @@
+from flask import Flask, request
 import sys, traceback, socket, re, urllib
 
 def get_traceback_as_html():
@@ -46,3 +47,14 @@ def get_ip():
     finally:
         s.close()
     return IP
+
+
+# TODO: Move it somewhere more reasonable
+def get_headers_to_forward():
+    headers = {}
+    for k, v in request.headers:
+        # Ignore those headers:
+        if k in ["Content-Length", "Host", "Origin", "Accept-Encoding"]:
+            continue
+        headers[k] = v
+    return headers
