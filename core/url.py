@@ -71,6 +71,8 @@ class URL:
         if _is_valid_url(s):
             return self.parse(s) # parse it instead.
         else:
+            self.fragment = ""
+            self.query = {}
             self.parse(urllib.parse.urljoin(self.resolve(), s))
         return self
 
