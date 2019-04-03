@@ -228,7 +228,10 @@ class WebCacher:
                     queries = os.listdir(str(path))
                     if len(queries) > 0:
                         wf = WebFile.from_path(path / queries[0])
-                        print("[WARN] Serving    \"%s\"\n       instead of \"%s\"\n       because it's similar." % (url, wf.url))
+                        if wf:
+                            print("[INFO] Serving    \"%s\"\n       instead of \"%s\"\n       because it's similar." % (url, wf.url))
+                        else:
+                            raise
                 else:
                     raise
         return wf
