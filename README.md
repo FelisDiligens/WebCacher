@@ -33,7 +33,7 @@ That's it.
 #### Windows
 Install Python 3 and git first and then run in a Command Prompt:
 ```batch
-pip install requests Flask lxml
+pip install requests Flask lxml pytube
 git clone https://github.com/FelisDiligens/WebCacher.git
 cd WebCacher
 python main.py
@@ -42,7 +42,7 @@ python main.py
 #### Ubuntu
 ```bash
 sudo apt install python3 python3-pip python3-lxml git -y
-sudo pip3 install requests Flask
+sudo pip3 install requests Flask pytube
 git clone https://github.com/FelisDiligens/WebCacher.git
 cd WebCacher
 python3 main.py
