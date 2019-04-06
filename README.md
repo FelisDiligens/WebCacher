@@ -41,8 +41,8 @@ python main.py
 
 #### Ubuntu
 ```bash
-sudo apt install python3 python3-pip git -y
-pip3 install requests Flask lxml
+sudo apt install python3 python3-pip python3-lxml git -y
+sudo pip3 install requests Flask
 git clone https://github.com/FelisDiligens/WebCacher.git
 cd WebCacher
 python3 main.py
