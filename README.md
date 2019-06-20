@@ -13,7 +13,7 @@ A http server (proxy) that caches every requested resource from the internet for
 When you access a site through the cacher, it downloads the resource from the internet and saves it locally.
 Then it will serve it from disk. (Queries are hashed, so search requests will be saved, too)
 
-All links and references will be altered to divert to the proxy.
+All links and references will be altered to point to the proxy.
 The headers of the browser's request will be forwarded, so you will likely not be confronted with "No robots" warnings.
 
 It will always prefer the cached resource, so you'll be able to access whole sites offline and save some traffic.
@@ -22,7 +22,7 @@ It will always prefer the cached resource, so you'll be able to access whole sit
 ### Prerequirements
 You'll need this:
 1. Python 3 interpreter
-2. Python librarys: "requests", "Flask", "lxml"
+2. Python librarys: "requests", "Flask", "lxml", "pytube"
 
 ### Install and run
 It's really simple.
