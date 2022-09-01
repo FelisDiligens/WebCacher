@@ -9,6 +9,11 @@ A http server (proxy) that caches every requested resource from the internet for
 ![Screenshot](https://github.com/FelisDiligens/WebCacher/raw/master/screenshots/wiki.png)
 > Screenshot showing cached Wikipedia.
 
+<br>
+
+![Screenshot](https://github.com/FelisDiligens/WebCacher/raw/master/screenshots/history.png)
+> Screenshot showing the browsing history.
+
 ## How does it work?
 When you access a site through the cacher, it downloads the resource from the internet and saves it locally.
 Then it will serve it from disk.
