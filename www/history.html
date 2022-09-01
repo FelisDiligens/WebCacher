@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebCacher browsing history</title>
+    <style>
+        html, body {
+            background-color: #fdfdfd;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        img {
+            width: 256px;
+            height: 256px;
+            margin-top: 50px;
+        }
+
+        h1, h2 {
+            font-weight: normal;
+        }
+
+        h1 {
+            font-size: 40px;
+        }
+
+        h2 {
+            font-size: 24px;
+        }
+
+        p, a {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebCacher browsing history</h1>
+    <a href="/">← Go back</a>
+    <p style="font-weight: bold;">All cached pages (html only):</p>
+    <div class="history">
+        %%HISTORY%%
+    </div>
+</body>
+</html>

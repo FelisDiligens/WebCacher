@@ -10,7 +10,11 @@ function getURL() {
             url = url.substring(url.indexOf("://") + 3);
         return "/cache/" + url;
     } else {
+        // Unfortunally, only Google works... more or less:
         return "/cache/www.google.com/search?q=" + encodeURIComponent(url);
+        // return "/cache/duckduckgo.com/?q=" + encodeURIComponent(url);
+        // return "/cache/www.qwant.com/?q=" + encodeURIComponent(url); 
+        // return "/cache/www.bing.com/search?q=" + encodeURIComponent(url);
     }
 }
 

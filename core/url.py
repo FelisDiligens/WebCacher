@@ -1,6 +1,8 @@
-import re
+import re, time
 import urllib.parse
 from core.locals import *
+from pathlib import Path
+from colorama import Fore, Back, Style
 
 """
     TODO:
@@ -47,21 +49,21 @@ class URL:
     def resolve(self):
         return _resolve_to_url(self)
 
-    def resolve_to_path(self):
-        """
-        Resolves the url to an path for caching.
+    # def resolve_to_path(self):
+    #     """
+    #     Resolves the url to an path for caching.
 
-        For instance
-        "http://www.example.com/search?q=foo+bar"
-        will be resolved to
-        "./cache/com/example/www/search/query171143778"
-        """
-        return _resolve_to_path(self)
+    #     For instance
+    #     "http://www.example.com/search?q=foo+bar"
+    #     will be resolved to
+    #     "./cache/com/example/www/search/query171143778"
+    #     """
+    #     return _resolve_to_path(self)
 
     def _concat(self, s):
         """In development..."""
         # If the url is absolute...
-        if _is_valid_url(s):
+        if is_valid_url(s):
             return URL.from_url(s) # parse it instead.
 
         # /starts/with/slash
@@ -77,7 +79,7 @@ class URL:
         """
 
         # If the url is absolute...
-        if _is_valid_url(s):
+        if is_valid_url(s):
             return self.parse(s) # parse it instead.
         else:
             self.parse(urllib.parse.urljoin(self.resolve(), s))
@@ -126,7 +128,7 @@ class URL:
         u = URL()
         u.original_url = self.original_url
         u.scheme = self.scheme
-        u.userinfo = self.userinfo
+        #u.userinfo = self.userinfo
         u.host = self.host
         u.port = self.port
         u.path = self.path.copy()
@@ -142,19 +144,43 @@ class URL:
 #URL_REGEX = re.compile(r"^(https?|ftp)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$")
 URL_REGEX = re.compile(r"(^|[\s.:;?\-\]<\(])(https?://[-\w;/?:@&=+$\|\_.!~*\|'()\[\]%#,☺]+[\w/#](\(\))?)(?=$|[\s',\|\(\).:;?\-\[\]>\)])")
 
-def _is_valid_url(s):
+# https://stackoverflow.com/questions/31430167/regex-check-if-given-string-is-relative-url
+RELATIVE_URL_REGEX = re.compile(r"""^                       # At the start of the string, ...
+                                    (?!                     # check if next characters are not...
+                                        www\.               # URLs starting with www.
+                                        |
+                                        (?:http|ftp)s?://   # URLs starting with http, https, ftp, ftps
+                                        |
+                                        [A-Za-z]:\\         # Local full paths starting with [drive_letter]:\  
+                                        |
+                                        //                  # UNC locations starting with //
+                                    )                       # End of look-ahead check
+                                    /                       # [Modification] Needs to start with a slash '/'
+                                    [a-z0-9\-_/\.]+           # [Modification] Needs to have characters
+                                $""", re.X)
+
+def is_valid_url(s):
     return bool(URL_REGEX.match(str(s)))
+
+def is_relative_url(s):
+    return bool(RELATIVE_URL_REGEX.match(str(s)))
 
 def _parse_url_query(s):
     args = {}
     for arg in s.strip().lstrip("?").split("&"):
-        key, value = arg.split("=")
+        i = arg.find("=")
+        if i > 0:
+            key = arg[:i]
+            value = arg[i+1:]
+        else:
+            key = arg
+            value = ""
         args[key] = urllib.parse.unquote_plus(value)
     return args
 
 def _parse_url(url, s):
     # Don't parse invalid URLs:
-    if not _is_valid_url(s):
+    if not is_valid_url(s):
         raise ValueError("The given url \"%s\" is invalid." % (s))
 
     url.original_url = str(s)
@@ -191,11 +217,20 @@ def _parse_url(url, s):
         # Get the path (e.g. "/subpage/index.html")
         url.path = temp.strip("/ ").split("/")
 
+    # Remove empty segments in path:
+    temppath = []
+    for segment in url.path:
+        if segment:
+            temppath.append(segment)
+    url.path = temppath
+
     # Get the port (e.g. ":8080")
     i = url.host.find(":")
     if i >= 0:
         url.port = url.host[i+1:]
         url.host = url.host[:i]
+
+    url.host = url.host.lower()
 
     url.resolved_url = _resolve_to_url(url)
     return url
@@ -232,25 +267,53 @@ def _resolve_to_url(url):
 
     return resolved_url
 
-def _resolve_to_path(url):
-    """
-    Resolves the url to an path for caching.
+# def _resolve_to_path(url):
+#     """
+#     Resolves the url to an path for caching.
 
-    For instance
-    "http://www.example.com/search?q=foo+bar"
-    will be resolved to
-    "./cache/com/example/www/search/query171143778"
-    """
+#     For instance
+#     "http://www.example.com/search?q=foo+bar"
+#     will be resolved to
+#     "./cache/com/example/www/search/query171143778"
+#     """
 
-    # TODO: ADD PORT AND THE OTHER STUFF!!
-    result = remove_unsafe_characters("./cache/" + "/".join(reversed(url.host.split("."))) + "/" + "/".join(url.path))
+#     # Has query? Then calculate hash...
+#     query = ""
+#     if url.query:
+#         query_hash = _java_string_hashcode(urllib.parse.urlencode(url.query))
+#         query = "/q%.0f" % (query_hash)
 
-    # Has query? Then calculate and append an hash to path.
-    if url.query:
-        query_hash = _java_string_hashcode(urllib.parse.urlencode(url.query))
-        result += "/query%.0f" % (query_hash)
+#     # TODO: ADD PORT AND THE OTHER STUFF!!
+#     result = "./cache/"+ "/".join(reversed(url.host.split(".")))
+#     if len(url.path) > 0:
+#         # NTFS path length is limited to 255 characters!
+#         # Calculate the maximum length of the various path chunks:
+#         # 255 characters
+#         #     - relative path length
+#         #     - current working path length
+#         #     - query length
+#         #     - count of '/'
+#         #     / (divided by) count of chunks
+#         # but at least 5 characters!
+#         max_chunk_length = int(max(( 255 - len(result) - len(str(Path(__file__).parent.absolute())) - len(query) - len(url.path) ) / len(url.path), 5))
+#         for chunk in url.path:
+#             if len(chunk) > max_chunk_length:
+#                 result += "/" + chunk[0:max_chunk_length] # truncate it, if too long
+#             else:
+#                 result += "/" + chunk
+#     result = remove_unsafe_characters(result)
+#     #result = remove_unsafe_characters("./cache/" + "/".join(reversed(url.host.split("."))) + "/" + "/".join(url.path))
 
-    return result
+#     # ... and append the query hash to the path.
+#     if len(query) > 0:
+#         result += "/" + query
+
+#     result_len = len(str(Path(result).absolute()))
+#     if result_len > 255:
+#         print(Fore.YELLOW + ("[WARN] Path length exceeds 255 characters! File might not load. (%i characters)" % result_len) + Style.RESET_ALL)
+#         print(Fore.BLUE + result + Style.RESET_ALL)
+
+#     return result
 
 # https://gist.github.com/hanleybrand/5224673
 def _java_string_hashcode(s):

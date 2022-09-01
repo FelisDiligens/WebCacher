@@ -1,6 +1,9 @@
-import socket, urllib, lxml.html
-from core.url import URL
+import socket, urllib
+from core.url import URL, is_valid_url, is_relative_url
 from core.locals import *
+from io import StringIO
+from bs4 import BeautifulSoup
+from colorama import Fore, Back, Style
 
 """
 I borrowed this code piece (proxifyCSS) of joshdick's miniProxy.php
@@ -37,37 +40,57 @@ def proxify_css(wf):
 
         if url.find("data:") == 0:
             return "url(" + url + ")" # The URL isn't an HTTP URL but is actual binary data. Don't proxify it.
-        return "url(" + _to_cache_url(wf_url, url) + ")"
+        return "url(" + to_cache_url(wf_url, url) + ")"
 
     wf.set_decoded_content(re.sub(r"url\((.*?)\)", repl2, normalized_css))
     return wf
 
-
 def proxify_html(wf):
+    """Make modifications to the cached HTML page, such as proxifing the URLs or removing crossorigin bullshit."""
     try:
         content = wf.get_decoded_content()
-        tree = lxml.html.fromstring(content) # Parse whole html tree
+        soup = BeautifulSoup(content, 'html5lib') # html5lib is apparently "Extremely lenient". That's suits us well!
 
-        for el in [["a", "href"], ["link", "href"], ["script", "src"], ["img", "src"], ["form", "action"], ["iframe", "src"]]: # Crawl elements with URL
-            # meta[@http-equiv]
-            for link_element in tree.xpath('//' + el[0]):
-                url = link_element.get(el[1]) # Get original URL
-                if url:
-                    url = _to_cache_url(wf.url.resolve(), url) # Call callback
-                    link_element.set(el[1], url) # Override old URL
+        # Replace all URLs with proxified ones:
+        for keywords in [["a", "href"], ["link", "href"], ["script", "src"], ["img", "src"], ["form", "action"], ["iframe", "src"]]:
+            tag_name = keywords[0]
+            attr_name = keywords[1]
+            for tag in soup.find_all(tag_name):
+                if tag.get(attr_name) != None:
+                    tag[attr_name] = to_cache_url(wf.url.resolve(), tag[attr_name])
 
                 # Remove integrity and crossorigin="anonymous" from <link>
-                if el[0] == "link":
-                    if "integrity" in link_element.attrib:
-                        del link_element.attrib["integrity"]
-                    if "crossorigin" in link_element.attrib:
-                        del link_element.attrib["crossorigin"]
+                if tag_name == "link":
+                    if tag.get("integrity") != None:
+                        del tag["integrity"]
+                    if tag.get("crossorigin") != None:
+                        del tag["crossorigin"]
 
-        wf.content = lxml.html.tostring(tree, encoding=wf.encoding)
+        # Search for URLs in "data-" attributes and proxify any url
+        # This might cause or solve problems depending on the webpage
+        for tag_name in ["div"]:
+            for tag in soup.find_all(tag_name):
+                for attr in tag.attrs.keys():
+                    if attr.startswith("data-") and (is_relative_url(tag[attr]) or is_valid_url(tag[attr])):
+                        tag[attr] = to_cache_url(wf.url.resolve(), tag[attr])
+
+
+        #wf.content = soup.prettify(wf.encoding, formatter=None) # return binary string
+        wf.content = str(soup).encode(wf.encoding, errors="ignore")
     except:
-        #raise
-        print("[WARN] Couldn't proxify URLs. Page \"%s\" may be broken." % (wf.url))
+        #raise # TODO: Comment this for productive use
+        print(Fore.YELLOW + ("[WARN] Couldn't proxify URLs. Page \"%s\" may be broken." % (wf.url)) + Style.RESET_ALL)
     return wf
+
+def get_html_title(wf):
+    try:
+        content = wf.get_decoded_content()
+        soup = BeautifulSoup(content, 'html5lib')
+        title = soup.find('title')
+        return title.string
+    except:
+        print(Fore.YELLOW + ("[WARN] Couldn't proxify URLs. Page \"%s\" may be broken." % (wf.url)) + Style.RESET_ALL)
+    return wf.url.resolve()
 
 def proxify(wf):
     if wf.type == "text/html":
@@ -76,14 +99,16 @@ def proxify(wf):
         proxify_css(wf)
     return wf
 
-def _to_cache_url(origin, link):
+def to_cache_url(origin, link):
+    # ERROR: ValueError // The given url "javascript:void(0)" is invalid.
+    if link.startswith('data:image') or link.startswith('javascript:') or link.startswith('about:blank'):
+        return link
     try:
-        #return "http://%s:8080/cache?url=%s" % (_local_ip_address, urllib.parse.quote((URL.from_url(origin) / link).resolve()))
         url = URL.from_url(origin) / link
         url.scheme = None # Scheme ("https://") will not be in string
+        #return "http://%s:8080/cache?url=%s" % (_local_ip_address, urllib.parse.quote((URL.from_url(origin) / link).resolve()))
         return "http://%s:8080/cache/%s" % (_local_ip_address, url.resolve())
-    except ValueError as e:
-        print("[WARN] Concatening of \"%s\" failed: %s" % (link, e))
-        return link
+    except ValueError: # The given url "javascript:void(0)" is invalid.
+        return "http://%s:8080/cache/%s" % (_local_ip_address, link)
     
 _local_ip_address = get_ip()

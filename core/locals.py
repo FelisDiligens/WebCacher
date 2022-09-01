@@ -1,4 +1,4 @@
-import sys, traceback, socket, re, urllib
+import sys, traceback, socket, re, urllib, json, os
 
 def get_traceback_as_html():
     return "<b>ERROR: {}</b><br>{}<br><br><b>Traceback:</b><br>{}".format(
@@ -9,7 +9,7 @@ def get_traceback_as_html():
 
 def get_file(path):
     result = ""
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         result = f.read()
     return result
 
@@ -46,3 +46,29 @@ def get_ip():
     finally:
         s.close()
     return IP
+
+config = None
+def get_config():
+    global config
+    if not config:
+        config = {
+            "server": {
+                "host": "0.0.0.0",
+                "port": 8080
+            },
+            "forwardHeaders": [
+                "User-Agent",
+                "Accept",
+                "Accept-Language",
+                "Accept-Encoding"
+            ], # Host, Connection, Referer, Upgrade-Insecure-Requests, Te, Incap-Proxy-245, X-Forwarded-For, Incap-Client-IP, X-Forwarded-Proto, Sec-Fetch-Site, Sec-Fetch-Mode, Sec-Fetch-Dest
+            "verbose": False
+        }
+        if os.path.exists("config.json"):
+            with open("config.json", "r") as f:
+                _config = json.loads(f.read())
+                for k in _config.keys():
+                    config[k] = _config[k]
+        with open("config.json", "w") as f:
+            f.write(json.dumps(config, indent=4))
+    return config

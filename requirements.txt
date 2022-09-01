@@ -1,0 +1,12 @@
+requests
+Flask
+#lxml
+#pytube3
+beautifulsoup4
+html5lib
+colorama
+cssselect
+flask-cors
+
+# pytube requirements:
+#typing-extensions
